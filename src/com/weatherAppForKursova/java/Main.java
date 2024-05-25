@@ -11,6 +11,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         //DatabaseService.initializeDatabase();
 
+        //Objects.requireNonNull(getClass().getResource("login.fxml"))
         Parent root = FXMLLoader.load(getClass().getResource("login.fxml"));
         primaryStage.setTitle("Прогноз погоди");
         primaryStage.setScene(new Scene(root, 800, 600));
