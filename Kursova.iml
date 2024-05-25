@@ -10,5 +10,7 @@
     <orderEntry type="library" exported="" name="gson-2.8.8" level="project" />
     <orderEntry type="library" exported="" name="json-simple-1.1" level="project" />
     <orderEntry type="library" exported="" name="libFX" level="project" />
+    <orderEntry type="library" name="mysql.connector.java" level="project" />
+    <orderEntry type="library" exported="" name="mysql-connector-java-8.0.11" level="project" />
   </component>
 </module>
