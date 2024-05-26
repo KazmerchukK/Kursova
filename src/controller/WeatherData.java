@@ -153,6 +153,7 @@ public class WeatherData {
         return mWindSpeed;
     }
 
+
     public Image getWeatherIcon() {
         String imageUrl = getClass().getResource("../assets/" + mWeatherIcon + ".png").toString();
         return new Image(imageUrl);
