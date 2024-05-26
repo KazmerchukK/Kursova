@@ -66,6 +66,28 @@ public class MainController {
 
     @FXML
     public void initialize() {
+        updateTime();
+        loadCities();
+        cityComboBox.setEditable(true);
+
+        cityComboBox.setOnAction(null);
+
+        suggestions = FXCollections.observableArrayList(cities);
+        cityComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                updateSuggestions(newValue);
+                if (!cityComboBox.isShowing()) {
+                    cityComboBox.show();
+                }
+            }
+        });
+
+        cityComboBox.setItems(suggestions);
+
+        cityComboBox.setOnAction(event -> fetchWeatherData());
+
+        cityComboBox.setMinHeight(24);
+        cityComboBox.setMaxHeight(24);
         toggleButton.setOnAction(event -> {
             isRegistrationMode = !isRegistrationMode;
             if (isRegistrationMode) {
@@ -85,6 +107,32 @@ public class MainController {
             }
         });
     }
+
+    private void updateSuggestions(String input) {
+        suggestions.clear();
+        suggestions.addAll(cities.stream()
+                .filter(city -> city.toLowerCase().startsWith(input.toLowerCase()))
+                .limit(5)
+                .collect(Collectors.toList()));
+
+        int itemCount = suggestions.size();
+        double rowHeight = 24; // Высота строки в списке (можете изменить на свое значение)
+        double maxHeight = 5 * rowHeight; // Максимальная высота списка
+        double calculatedHeight = Math.min(itemCount * rowHeight, maxHeight);
+        cityComboBox.setPrefHeight(calculatedHeight);
+        cityComboBox.hide();
+        cityComboBox.show();
+    }
+
+    private void loadCities() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                getClass().getResourceAsStream("/assets/cities_ukraine.txt"), "UTF-8"))) {
+            cities = reader.lines().collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @FXML
     private void registerUser() {
@@ -155,7 +203,6 @@ public class MainController {
         }
     }
 
-    // Other methods like fetchData(), setData(), updateTime(), etc.
 
     @FXML
     private void fetchData() {
@@ -175,6 +222,44 @@ public class MainController {
         }
     }
 
+    private void updateFavorites(String city) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+            Statement statement = connection.createStatement();
+
+            String favoritesQuery = "SELECT favorites FROM users WHERE username = ?";
+            PreparedStatement favoritesStatement = connection.prepareStatement(favoritesQuery);
+            favoritesStatement.setString(1, usernameField.getText());
+            ResultSet resultSet = favoritesStatement.executeQuery();
+
+            if (resultSet.next()) {
+                String currentFavorites = resultSet.getString("favorites");
+                if (currentFavorites == null || currentFavorites.isEmpty()) {
+                    currentFavorites = city + "&";
+                } else {
+                    // Проверяем, содержится ли уже этот город в избранных
+                    if (currentFavorites.contains(city)) {
+                        // Если содержится, удаляем его из списка избранных
+                        currentFavorites = currentFavorites.replace(city + "&", "");
+                    } else {
+                        // Если не содержится, добавляем его в список избранных
+                        currentFavorites += city + "&";
+                    }
+                }
+                String updateFavoritesQuery = "UPDATE users SET favorites = ? WHERE username = ?";
+                PreparedStatement updateFavoritesStatement = connection.prepareStatement(updateFavoritesQuery);
+                updateFavoritesStatement.setString(1, currentFavorites);
+                updateFavoritesStatement.setString(2, usernameField.getText());
+                updateFavoritesStatement.executeUpdate();
+            }
+
+            connection.close();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML
     private void setData(WeatherData data) {
         cityLable.setText(data.getCity());
@@ -191,6 +276,7 @@ public class MainController {
         starIcon.setFitHeight(20);
         Label favoriteLabel = new Label("", starIcon);
         favoriteLabel.setOnMouseClicked(event -> {
+            updateFavorites(city);
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
@@ -203,6 +289,7 @@ public class MainController {
                     PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
                     deleteStatement.setString(1, data.getCity());
                     deleteStatement.executeUpdate();
+
                 } else {
                     favorites.add(data.getCity());
                     starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
@@ -210,6 +297,7 @@ public class MainController {
                     PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
                     insertStatement.setString(1, data.getCity());
                     insertStatement.executeUpdate();
+
                 }
 
                 connection.close();
@@ -218,13 +306,45 @@ public class MainController {
             }
         });
         cityLable.setGraphic(favoriteLabel);
+        updateSearchHistory(data.getCity());
+    }
+    private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
+
+    @FXML
+    private void updateTime() {
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() {
+                while (true) {
+                    Platform.runLater(() -> timeLabel.setText(timeFormat.format(Calendar.getInstance().getTime())));
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
     }
 
-    private void updateSuggestions(String input) {
-        suggestions.clear();
-        suggestions.addAll(cities.stream()
-                .filter(city -> city.toLowerCase().startsWith(input.toLowerCase()))
-                .limit(10)
-                .collect(Collectors.toList()));
+    private void updateSearchHistory(String city) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+            Statement statement = connection.createStatement();
+
+            String updateHistoryQuery = "UPDATE users SET history = CONCAT(history, ?) WHERE username = ?";
+            PreparedStatement updateHistoryStatement = connection.prepareStatement(updateHistoryQuery);
+            updateHistoryStatement.setString(1, city + "&");
+            updateHistoryStatement.setString(2, usernameField.getText());
+            updateHistoryStatement.executeUpdate();
+
+            connection.close();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
