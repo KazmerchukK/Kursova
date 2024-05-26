@@ -14,6 +14,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleButton?>
 <AnchorPane id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="557.0" prefWidth="998.0" styleClass="./style.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
    <children>
       <Button fx:id="fetchDataBtn" layoutX="492.0" layoutY="464.0" mnemonicParsing="false" onAction="#fetchData" prefHeight="28.0" prefWidth="61.0" text="Fetch" />
@@ -114,12 +115,11 @@
          </font>
       </Label>
 
-      <VBox id="Forma" alignment="CENTER" layoutX="375.0" layoutY="200.0" spacing="10">
-         <RadioButton fx:id="registrationRadio" text="Registration" />
-         <RadioButton fx:id="authorizationRadio" text="Authorization" />
+      <VBox fx:id="Forma" alignment="CENTER" layoutX="375.0" layoutY="200.0" spacing="10" style="-fx-background-color: white; -fx-padding: 20;">
+         <ToggleButton fx:id="toggleButton" text="Switch to Registration"/>
          <TextField fx:id="usernameField" promptText="Username" />
          <PasswordField fx:id="passwordField" promptText="Password" />
-         <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
+         <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" visible="false"/>
          <Button fx:id="submitButton" text="Submit" />
          <Label fx:id="errorLabel" textFill="RED" />
       </VBox>

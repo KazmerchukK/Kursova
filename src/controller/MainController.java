@@ -8,11 +8,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import org.json.simple.parser.ParseException;
-import java.sql.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,11 +38,9 @@ public class MainController {
 
     @FXML
     private ImageView conditionIcon;
-    @FXML
-    private RadioButton registrationRadio;
 
     @FXML
-    private RadioButton authorizationRadio;
+    private ToggleButton toggleButton;
 
     @FXML
     private TextField usernameField;
@@ -57,22 +57,24 @@ public class MainController {
     @FXML
     private Label errorLabel;
     @FXML
-    private Label cityLable, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable,
-            pressureLable, timeLabel;
+    private Label cityLable, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable, pressureLable, timeLabel;
+
+    @FXML
+    private VBox Forma;
 
     private boolean isRegistrationMode = false;
 
     @FXML
     public void initialize() {
-        // Инициализация элементов интерфейса и обработчиков событий
-        registrationRadio.setOnAction(event -> {
-            isRegistrationMode = true;
-            confirmPasswordField.setVisible(true);
-        });
-
-        authorizationRadio.setOnAction(event -> {
-            isRegistrationMode = false;
-            confirmPasswordField.setVisible(false);
+        toggleButton.setOnAction(event -> {
+            isRegistrationMode = !isRegistrationMode;
+            if (isRegistrationMode) {
+                toggleButton.setText("Switch to Authorization");
+                confirmPasswordField.setVisible(true);
+            } else {
+                toggleButton.setText("Switch to Registration");
+                confirmPasswordField.setVisible(false);
+            }
         });
 
         submitButton.setOnAction(event -> {
@@ -83,6 +85,7 @@ public class MainController {
             }
         });
     }
+
     @FXML
     private void registerUser() {
         String username = usernameField.getText();
@@ -99,7 +102,6 @@ public class MainController {
             Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
             Statement statement = connection.createStatement();
 
-            // Проверяем существует ли пользователь с таким именем
             String checkUserQuery = "SELECT * FROM users WHERE username = ?";
             PreparedStatement checkUserStatement = connection.prepareStatement(checkUserQuery);
             checkUserStatement.setString(1, username);
@@ -110,7 +112,6 @@ public class MainController {
                 return;
             }
 
-            // Создаем нового пользователя
             String insertUserQuery = "INSERT INTO users (username, password) VALUES (?, ?)";
             PreparedStatement insertUserStatement = connection.prepareStatement(insertUserQuery);
             insertUserStatement.setString(1, username);
@@ -133,9 +134,7 @@ public class MainController {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-            Statement statement = connection.createStatement();
 
-            // Проверяем существует ли пользователь с таким именем и паролем
             String checkUserQuery = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement checkUserStatement = connection.prepareStatement(checkUserQuery);
             checkUserStatement.setString(1, username);
@@ -144,7 +143,7 @@ public class MainController {
 
             if (resultSet.next()) {
                 errorLabel.setText("Login successful");
-                // Здесь можете переходить в главное окно вашего приложения
+                Forma.setVisible(false);
             } else {
                 errorLabel.setText("Invalid username or password");
             }
@@ -155,30 +154,8 @@ public class MainController {
             errorLabel.setText("Error authenticating user");
         }
     }
-    private void updateSuggestions(String input) {
-        suggestions.clear();
-        suggestions.addAll(cities.stream()
-                .filter(city -> city.toLowerCase().startsWith(input.toLowerCase()))
-                .limit(5)
-                .collect(Collectors.toList()));
 
-        int itemCount = suggestions.size();
-        double rowHeight = 24; // Высота строки в списке (можете изменить на свое значение)
-        double maxHeight = 5 * rowHeight; // Максимальная высота списка
-        double calculatedHeight = Math.min(itemCount * rowHeight, maxHeight);
-        cityComboBox.setPrefHeight(calculatedHeight);
-        cityComboBox.hide();
-        cityComboBox.show();
-    }
-
-    private void loadCities() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                getClass().getResourceAsStream("/assets/cities_ukraine.txt"), "UTF-8"))) {
-            cities = reader.lines().collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // Other methods like fetchData(), setData(), updateTime(), etc.
 
     @FXML
     private void fetchData() {
@@ -209,7 +186,6 @@ public class MainController {
         humidityLable.setText(data.getHumidity() + "%");
         pressureLable.setText(data.getPressure() + " hPa");
 
-        // Добавление звездочки для добавления в избранное
         ImageView starIcon = new ImageView(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
         starIcon.setFitWidth(20);
         starIcon.setFitHeight(20);
@@ -222,50 +198,33 @@ public class MainController {
 
                 if (favorites.contains(data.getCity())) {
                     favorites.remove(data.getCity());
-                    System.out.println("Removed from favorites: " + data.getCity());
                     starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
-                    // Удаление из базы данных
                     String deleteQuery = "DELETE FROM favorites WHERE city = ?";
                     PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
                     deleteStatement.setString(1, data.getCity());
                     deleteStatement.executeUpdate();
                 } else {
                     favorites.add(data.getCity());
-                    System.out.println("Added to favorites: " + data.getCity());
                     starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
-                    // Добавление в базу данных
                     String insertQuery = "INSERT INTO favorites (city) VALUES (?)";
                     PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
                     insertStatement.setString(1, data.getCity());
                     insertStatement.executeUpdate();
                 }
 
-                connection.close(); // Закрываем соединение с базой данных
+                connection.close();
             } catch (ClassNotFoundException | SQLException e) {
                 e.printStackTrace();
             }
         });
         cityLable.setGraphic(favoriteLabel);
     }
-    private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
 
-    @FXML
-    private void updateTime() {
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() {
-                while (true) {
-                    Platform.runLater(() -> timeLabel.setText(timeFormat.format(Calendar.getInstance().getTime())));
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        Thread t = new Thread(task);
-        t.setDaemon(true);
-        t.start();
+    private void updateSuggestions(String input) {
+        suggestions.clear();
+        suggestions.addAll(cities.stream()
+                .filter(city -> city.toLowerCase().startsWith(input.toLowerCase()))
+                .limit(10)
+                .collect(Collectors.toList()));
     }
 }
