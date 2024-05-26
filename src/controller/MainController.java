@@ -36,37 +36,125 @@ public class MainController {
 
     @FXML
     private ImageView conditionIcon;
+    @FXML
+    private RadioButton registrationRadio;
 
+    @FXML
+    private RadioButton authorizationRadio;
+
+    @FXML
+    private TextField usernameField;
+
+    @FXML
+    private PasswordField passwordField;
+
+    @FXML
+    private PasswordField confirmPasswordField;
+
+    @FXML
+    private Button submitButton;
+
+    @FXML
+    private Label errorLabel;
     @FXML
     private Label cityLable, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable,
             pressureLable, timeLabel;
 
+    private boolean isRegistrationMode = false;
+
     @FXML
     public void initialize() {
-        updateTime();
-        loadCities();
-        cityComboBox.setEditable(true);
-
-        cityComboBox.setOnAction(null);
-
-        suggestions = FXCollections.observableArrayList(cities);
-        cityComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.isEmpty()) {
-                updateSuggestions(newValue);
-                if (!cityComboBox.isShowing()) {
-                    cityComboBox.show();
-                }
-            }
+        // Инициализация элементов интерфейса и обработчиков событий
+        registrationRadio.setOnAction(event -> {
+            isRegistrationMode = true;
+            confirmPasswordField.setVisible(true);
         });
 
-        cityComboBox.setItems(suggestions);
+        authorizationRadio.setOnAction(event -> {
+            isRegistrationMode = false;
+            confirmPasswordField.setVisible(false);
+        });
 
-        cityComboBox.setOnAction(event -> fetchWeatherData());
+        submitButton.setOnAction(event -> {
+            if (isRegistrationMode) {
+                registerUser();
+            } else {
+                authenticateUser();
+            }
+        });
+    }
+    @FXML
+    private void registerUser() {
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        String confirmPassword = confirmPasswordField.getText();
 
-        cityComboBox.setMinHeight(24);
-        cityComboBox.setMaxHeight(24);
+        if (!password.equals(confirmPassword)) {
+            errorLabel.setText("Passwords do not match");
+            return;
+        }
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+            Statement statement = connection.createStatement();
+
+            // Проверяем существует ли пользователь с таким именем
+            String checkUserQuery = "SELECT * FROM users WHERE username = ?";
+            PreparedStatement checkUserStatement = connection.prepareStatement(checkUserQuery);
+            checkUserStatement.setString(1, username);
+            ResultSet resultSet = checkUserStatement.executeQuery();
+
+            if (resultSet.next()) {
+                errorLabel.setText("Username already exists");
+                return;
+            }
+
+            // Создаем нового пользователя
+            String insertUserQuery = "INSERT INTO users (username, password) VALUES (?, ?)";
+            PreparedStatement insertUserStatement = connection.prepareStatement(insertUserQuery);
+            insertUserStatement.setString(1, username);
+            insertUserStatement.setString(2, password);
+            insertUserStatement.executeUpdate();
+
+            errorLabel.setText("Registration successful");
+            connection.close();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+            errorLabel.setText("Error registering user");
+        }
     }
 
+    @FXML
+    private void authenticateUser() {
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+            Statement statement = connection.createStatement();
+
+            // Проверяем существует ли пользователь с таким именем и паролем
+            String checkUserQuery = "SELECT * FROM users WHERE username = ? AND password = ?";
+            PreparedStatement checkUserStatement = connection.prepareStatement(checkUserQuery);
+            checkUserStatement.setString(1, username);
+            checkUserStatement.setString(2, password);
+            ResultSet resultSet = checkUserStatement.executeQuery();
+
+            if (resultSet.next()) {
+                errorLabel.setText("Login successful");
+                // Здесь можете переходить в главное окно вашего приложения
+            } else {
+                errorLabel.setText("Invalid username or password");
+            }
+
+            connection.close();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+            errorLabel.setText("Error authenticating user");
+        }
+    }
     private void updateSuggestions(String input) {
         suggestions.clear();
         suggestions.addAll(cities.stream()
@@ -135,7 +223,7 @@ public class MainController {
                 if (favorites.contains(data.getCity())) {
                     favorites.remove(data.getCity());
                     System.out.println("Removed from favorites: " + data.getCity());
-                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
+                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
                     // Удаление из базы данных
                     String deleteQuery = "DELETE FROM favorites WHERE city = ?";
                     PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
@@ -144,7 +232,7 @@ public class MainController {
                 } else {
                     favorites.add(data.getCity());
                     System.out.println("Added to favorites: " + data.getCity());
-                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
+                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
                     // Добавление в базу данных
                     String insertQuery = "INSERT INTO favorites (city) VALUES (?)";
                     PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
