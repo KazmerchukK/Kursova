@@ -28,6 +28,7 @@ public class SQL {
                 System.out.println("Name: " + resultSet.getString("name"));
             }
 
+
             // Закрываем ресурсы
             resultSet.close();
             statement.close();
