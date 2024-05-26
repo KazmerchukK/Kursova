@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.json.simple.parser.ParseException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,6 +24,7 @@ public class MainController {
     private Image image;
     private List<String> cities;
     private ObservableList<String> suggestions;
+    private Set<String> favorites = new HashSet<>();
 
     @FXML
     private Button fetchDataBtn;
@@ -43,13 +45,9 @@ public class MainController {
         loadCities();
         cityComboBox.setEditable(true);
 
-        // Удаляем предыдущий обработчик события выбора элемента
         cityComboBox.setOnAction(null);
 
-        // Создаем список подсказок
         suggestions = FXCollections.observableArrayList(cities);
-
-        // Добавляем обработчик для обновления подсказок при изменении текста
         cityComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.isEmpty()) {
                 updateSuggestions(newValue);
@@ -59,49 +57,28 @@ public class MainController {
             }
         });
 
-        // Устанавливаем начальный список подсказок
         cityComboBox.setItems(suggestions);
 
-        // Добавляем новый обработчик для события выбора элемента ComboBox
         cityComboBox.setOnAction(event -> fetchWeatherData());
 
-        // Устанавливаем минимальную и максимальную высоту строки ввода
         cityComboBox.setMinHeight(24);
         cityComboBox.setMaxHeight(24);
     }
 
     private void updateSuggestions(String input) {
-        // Очищаем список подсказок
         suggestions.clear();
-
-        // Добавляем только те элементы, которые начинаются с введенного текста
         suggestions.addAll(cities.stream()
                 .filter(city -> city.toLowerCase().startsWith(input.toLowerCase()))
                 .limit(5)
                 .collect(Collectors.toList()));
 
-        // Устанавливаем высоту выпадающего списка
         int itemCount = suggestions.size();
         double rowHeight = 24; // Высота строки в списке (можете изменить на свое значение)
         double maxHeight = 5 * rowHeight; // Максимальная высота списка
         double calculatedHeight = Math.min(itemCount * rowHeight, maxHeight);
         cityComboBox.setPrefHeight(calculatedHeight);
-
-        // Обновляем выпадающий список, чтобы высота обновилась
         cityComboBox.hide();
         cityComboBox.show();
-    }
-
-    // Метод для обработки изменения текста в ComboBox
-    private void handleCityInput(String input) {
-        if (input.isEmpty()) {
-            cityComboBox.hide();
-        } else {
-            updateSuggestions(input);
-            if (!cityComboBox.isShowing()) {
-                cityComboBox.show();
-            }
-        }
     }
 
     private void loadCities() {
@@ -141,6 +118,24 @@ public class MainController {
         windSpeedLable.setText(data.getWindSpeed() + " m/s");
         humidityLable.setText(data.getHumidity() + "%");
         pressureLable.setText(data.getPressure() + " hPa");
+
+        // Добавление звездочки для добавления в избранное
+        ImageView starIcon = new ImageView(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
+        starIcon.setFitWidth(20);
+        starIcon.setFitHeight(20);
+        Label favoriteLabel = new Label("", starIcon);
+        favoriteLabel.setOnMouseClicked(event -> {
+            if (favorites.contains(data.getCity())) {
+                favorites.remove(data.getCity());
+                System.out.println("Removed from favorites: " + data.getCity());
+                starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
+            } else {
+                favorites.add(data.getCity());
+                System.out.println("Added to favorites: " + data.getCity());
+                starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
+            }
+        });
+        cityLable.setGraphic(favoriteLabel);
     }
 
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
