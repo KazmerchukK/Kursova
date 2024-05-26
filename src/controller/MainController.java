@@ -9,7 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.json.simple.parser.ParseException;
-
+import java.sql.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,7 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainController {
-
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/basemy";
+    private static final String JDBC_USER = "admin";
+    private static final String JDBC_PASSWORD = "admin";
     private WeatherData data = new WeatherData();
     private String city;
     private Image image;
@@ -125,19 +127,38 @@ public class MainController {
         starIcon.setFitHeight(20);
         Label favoriteLabel = new Label("", starIcon);
         favoriteLabel.setOnMouseClicked(event -> {
-            if (favorites.contains(data.getCity())) {
-                favorites.remove(data.getCity());
-                System.out.println("Removed from favorites: " + data.getCity());
-                starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
-            } else {
-                favorites.add(data.getCity());
-                System.out.println("Added to favorites: " + data.getCity());
-                starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+                Statement statement = connection.createStatement();
+
+                if (favorites.contains(data.getCity())) {
+                    favorites.remove(data.getCity());
+                    System.out.println("Removed from favorites: " + data.getCity());
+                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
+                    // Удаление из базы данных
+                    String deleteQuery = "DELETE FROM favorites WHERE city = ?";
+                    PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
+                    deleteStatement.setString(1, data.getCity());
+                    deleteStatement.executeUpdate();
+                } else {
+                    favorites.add(data.getCity());
+                    System.out.println("Added to favorites: " + data.getCity());
+                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
+                    // Добавление в базу данных
+                    String insertQuery = "INSERT INTO favorites (city) VALUES (?)";
+                    PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
+                    insertStatement.setString(1, data.getCity());
+                    insertStatement.executeUpdate();
+                }
+
+                connection.close(); // Закрываем соединение с базой данных
+            } catch (ClassNotFoundException | SQLException e) {
+                e.printStackTrace();
             }
         });
         cityLable.setGraphic(favoriteLabel);
     }
-
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
 
     @FXML
