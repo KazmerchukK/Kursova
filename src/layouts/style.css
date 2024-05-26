@@ -3,6 +3,7 @@
     -fx-background-size:  100% 100%;
     -fx-font-family: 'Courier', sans-serif;
 }
+
 /*#Forma{
     -fx-background-image: url("../assets/rain.png");
     -fx-background-size:  100% 100%;
@@ -11,3 +12,65 @@
 
 /* style="-fx-background-image: url('file:D:/JavaFX-Project/WeatherAppTest/Weather-App-Test/src/assets/background.jpg'); -fx-background-size: 100% 100%;" */
 
+/* styles.css */
+/* styles.css */
+
+.root {
+    -fx-background-color: #b3e5fc; /* Pastel blue background */
+}
+
+.login-form {
+    -fx-background-color: white;
+    -fx-padding: 40;
+    -fx-spacing: 20;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 10, 0.5, 0, 0);
+    -fx-background-radius: 10;
+}
+
+.text-field, .password-field {
+    -fx-background-color: #e0f7fa;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #00796b;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-background-color: #b2ebf2;
+}
+
+.button {
+    -fx-background-color: #00796b;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #004d40;
+}
+
+.button:pressed {
+    -fx-background-color: #003d33;
+}
+
+.toggle-button {
+    -fx-background-color: #004d40;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.toggle-button:hover {
+    -fx-background-color: #00251a;
+}
+
+.toggle-button:pressed {
+    -fx-background-color: #00120c;
+}

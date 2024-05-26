@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
@@ -30,14 +31,17 @@ public class MainController {
     private ObservableList<String> suggestions;
     private Set<String> favorites = new HashSet<>();
 
+/*    @FXML
+    private Label tempLable;*/
+
     @FXML
-    private Button fetchDataBtn;
+    private Button fetchDataBtn, submitButton;
 
     @FXML
     private ComboBox<String> cityComboBox;
 
     @FXML
-    private ImageView conditionIcon;
+    private ImageView conditionIcon,rainIcon2 ,windIcon ,HumidityIcon ,PressureIcon;
 
     @FXML
     private ToggleButton toggleButton;
@@ -46,26 +50,25 @@ public class MainController {
     private TextField usernameField;
 
     @FXML
-    private PasswordField passwordField;
+    private PasswordField passwordField, confirmPasswordField;
 
     @FXML
-    private PasswordField confirmPasswordField;
+    private Rectangle rectangle;
 
     @FXML
-    private Button submitButton;
-
-    @FXML
-    private Label errorLabel;
-    @FXML
-    private Label cityLable, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable, pressureLable, timeLabel;
+    private Label cityLable,errorLabel, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable, pressureLable, timeLabel,rain, cityLable11, cityLable111, cityLable1111;
 
     @FXML
     private VBox Forma;
 
     private boolean isRegistrationMode = false;
+    private boolean isAuthenticated = false;
 
     @FXML
     public void initialize() {
+
+        setAuthenticationStatus();
+
         updateTime();
         loadCities();
         cityComboBox.setEditable(true);
@@ -87,7 +90,7 @@ public class MainController {
         cityComboBox.setOnAction(event -> fetchWeatherData());
 
         cityComboBox.setMinHeight(24);
-        cityComboBox.setMaxHeight(24);
+        cityComboBox.setMaxHeight(36);
         toggleButton.setOnAction(event -> {
             isRegistrationMode = !isRegistrationMode;
             if (isRegistrationMode) {
@@ -108,6 +111,56 @@ public class MainController {
         });
     }
 
+
+    private void setAuthenticationStatus() {
+        Forma.setVisible(!isAuthenticated);
+        Forma.setManaged(!isAuthenticated);
+
+        cityComboBox.setVisible(isAuthenticated);
+        cityComboBox.setManaged(isAuthenticated);
+        fetchDataBtn.setVisible(isAuthenticated);
+        fetchDataBtn.setManaged(isAuthenticated);
+
+        tempLable.setVisible(isAuthenticated);
+        tempLable.setManaged(isAuthenticated);
+        cityLable.setVisible(isAuthenticated);
+        cityLable.setManaged(isAuthenticated);
+        discriptionLable.setVisible(isAuthenticated);
+        discriptionLable.setManaged(isAuthenticated);
+        feelLable.setVisible(isAuthenticated);
+        feelLable.setManaged(isAuthenticated);
+        rainChanceLable.setVisible(isAuthenticated);
+        rainChanceLable.setManaged(isAuthenticated);
+        windSpeedLable.setVisible(isAuthenticated);
+        windSpeedLable.setManaged(isAuthenticated);
+        humidityLable.setVisible(isAuthenticated);
+        humidityLable.setManaged(isAuthenticated);
+        pressureLable.setVisible(isAuthenticated);
+        pressureLable.setManaged(isAuthenticated);
+
+        conditionIcon.setVisible(isAuthenticated);
+        conditionIcon.setManaged(isAuthenticated);
+        rainIcon2.setVisible(isAuthenticated);
+        rainIcon2.setManaged(isAuthenticated);
+        windIcon.setVisible(isAuthenticated);
+        windIcon.setManaged(isAuthenticated);
+        HumidityIcon.setVisible(isAuthenticated);
+        HumidityIcon.setManaged(isAuthenticated);
+        PressureIcon.setVisible(isAuthenticated);
+        PressureIcon.setManaged(isAuthenticated);
+
+        rain.setVisible(isAuthenticated);
+        rain.setManaged(isAuthenticated);
+        cityLable11.setVisible(isAuthenticated);
+        cityLable11.setManaged(isAuthenticated);
+        cityLable111.setVisible(isAuthenticated);
+        cityLable111.setManaged(isAuthenticated);
+        cityLable1111.setVisible(isAuthenticated);
+        cityLable1111.setManaged(isAuthenticated);
+
+        rectangle.setVisible(isAuthenticated);
+        rectangle.setManaged(isAuthenticated);
+    }
     private void updateSuggestions(String input) {
         suggestions.clear();
         suggestions.addAll(cities.stream()
@@ -116,7 +169,7 @@ public class MainController {
                 .collect(Collectors.toList()));
 
         int itemCount = suggestions.size();
-        double rowHeight = 24; // Высота строки в списке (можете изменить на свое значение)
+        double rowHeight = 36; // Высота строки в списке (можете изменить на свое значение)
         double maxHeight = 5 * rowHeight; // Максимальная высота списка
         double calculatedHeight = Math.min(itemCount * rowHeight, maxHeight);
         cityComboBox.setPrefHeight(calculatedHeight);
@@ -190,6 +243,8 @@ public class MainController {
             ResultSet resultSet = checkUserStatement.executeQuery();
 
             if (resultSet.next()) {
+                isAuthenticated = true;
+                setAuthenticationStatus();
                 errorLabel.setText("Login successful");
                 Forma.setVisible(false);
             } else {

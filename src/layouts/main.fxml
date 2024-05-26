@@ -17,9 +17,9 @@
 <?import javafx.scene.control.ToggleButton?>
 <AnchorPane id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="557.0" prefWidth="998.0" styleClass="./style.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
    <children>
-      <Button fx:id="fetchDataBtn" layoutX="492.0" layoutY="464.0" mnemonicParsing="false" onAction="#fetchData" prefHeight="28.0" prefWidth="61.0" text="Fetch" />
+      <Button fx:id="fetchDataBtn" layoutX="460.0" layoutY="464.0" mnemonicParsing="false" onAction="#fetchData" prefHeight="28.0" prefWidth="128.0" text="Fetch" />
       <ComboBox fx:id="cityComboBox" layoutX="438.0" layoutY="410.0" prefHeight="34.0" prefWidth="169.0" promptText="Enter your city" editable="true"/>
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0000006d" height="159.0" layoutX="-2.0" layoutY="195.0" stroke="BLACK" strokeType="INSIDE" width="958.0" />
+      <Rectangle fx:id="rectangle" arcHeight="5.0" arcWidth="5.0" fill="#0000006d" height="159.0" layoutX="-2.0" layoutY="195.0" stroke="BLACK" strokeType="INSIDE" width="958.0" />
       <ImageView fx:id="conditionIcon" fitHeight="99.0" fitWidth="139.0" layoutX="54.0" layoutY="221.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../assets/default01.png" />
@@ -41,12 +41,12 @@
          </font>
       </Label>
       <Line endX="-99.99996948242188" endY="112.22222900390625" layoutX="402.0" layoutY="220.0" startX="-99.99996948242188" startY="-5.9999847412109375" stroke="#414141" strokeWidth="2.0" />
-      <Label layoutX="355.0" layoutY="233.0" prefHeight="28.0" prefWidth="52.0" text="Rain" textFill="WHITE">
+      <Label fx:id="rain" layoutX="355.0" layoutY="233.0" prefHeight="28.0" prefWidth="52.0" text="Rain" textFill="WHITE">
          <font>
             <Font size="19.0" />
          </font>
       </Label>
-      <ImageView fitHeight="34.0" fitWidth="34.0" layoutX="333.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="rainIcon2" fitHeight="34.0" fitWidth="34.0" layoutX="333.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../assets/rainIcon2.png" />
          </image>
@@ -63,7 +63,7 @@
          </font>
       </Label>
       <Line endX="-99.99996948242188" endY="112.22222900390625" layoutX="720.0" layoutY="220.0" startX="-99.99996948242188" startY="-5.9999847412109375" stroke="#414141" strokeWidth="2.0" />
-      <ImageView fitHeight="33.0" fitWidth="45.0" layoutX="486.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="windIcon" fitHeight="33.0" fitWidth="45.0" layoutX="486.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../assets/windIcon.png" />
          </image>
@@ -78,7 +78,7 @@
             <Font size="19.0" />
          </font>
       </Label>
-      <ImageView fitHeight="35.0" fitWidth="34.0" layoutX="652.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="HumidityIcon" fitHeight="35.0" fitWidth="34.0" layoutX="652.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../assets/HumidityIcon.png" />
          </image>
@@ -94,7 +94,7 @@
             <Font size="19.0" />
          </font>
       </Label>
-      <ImageView fitHeight="35.0" fitWidth="34.0" layoutX="809.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="PressureIcon" fitHeight="35.0" fitWidth="34.0" layoutX="809.0" layoutY="268.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../assets/PressureIcon.png" />
          </image>
@@ -115,7 +115,7 @@
          </font>
       </Label>
 
-      <VBox fx:id="Forma" alignment="CENTER" layoutX="375.0" layoutY="200.0" spacing="10" style="-fx-background-color: white; -fx-padding: 20;">
+      <VBox fx:id="Forma" alignment="CENTER" layoutX="420.0" layoutY="176.0" spacing="14" style="-fx-background-color: white; -fx-padding: 20;">
          <ToggleButton fx:id="toggleButton" text="Switch to Registration"/>
          <TextField fx:id="usernameField" promptText="Username" />
          <PasswordField fx:id="passwordField" promptText="Password" />
