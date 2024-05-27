@@ -115,10 +115,9 @@
          </font>
       </Label>
 
-
-
-
-
+      <VBox fx:id="Favorites" alignment="CENTER" layoutX="700.0" layoutY="78.0" spacing="14">
+         <ComboBox fx:id="favoritesComboBox" layoutX="438.0" layoutY="410.0" prefHeight="34.0" prefWidth="169.0" promptText="Select favorite city" editable="true"/>
+      </VBox>
 
       <VBox fx:id="Beck" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="557.0" prefWidth="998.0">
          <ImageView fx:id="background" fitHeight="1000.0" fitWidth="1000.0" layoutX="30.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true">
@@ -136,11 +135,6 @@
          <Button fx:id="submitButton" text="Submit" />
          <Label fx:id="errorLabel" textFill="RED" />
       </VBox>
-
-      <VBox fx:id="Favorites" alignment="CENTER" layoutX="700.0" layoutY="78.0" spacing="14">
-         <ComboBox fx:id="favoritesComboBox" layoutX="438.0" layoutY="410.0" prefHeight="34.0" prefWidth="169.0" promptText="Select favorite city" editable="true"/>
-      </VBox>
-
 
    </children>
 </AnchorPane>
