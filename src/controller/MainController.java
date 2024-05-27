@@ -31,17 +31,14 @@ public class MainController {
     private ObservableList<String> suggestions;
     private Set<String> favorites = new HashSet<>();
 
-/*    @FXML
-    private Label tempLable;*/
-
     @FXML
     private Button fetchDataBtn, submitButton;
 
     @FXML
-    private ComboBox<String> cityComboBox, favoritesСomboBox;
+    private ComboBox<String> cityComboBox, favoritesComboBox;
 
     @FXML
-    private ImageView conditionIcon,rainIcon2 ,windIcon ,HumidityIcon ,PressureIcon, background;
+    private ImageView conditionIcon, rainIcon2, windIcon, HumidityIcon, PressureIcon, background;
 
     @FXML
     private ToggleButton toggleButton;
@@ -56,7 +53,7 @@ public class MainController {
     private Rectangle rectangle;
 
     @FXML
-    private Label cityLable,errorLabel, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable, pressureLable, timeLabel,rain, cityLable11, cityLable111, cityLable1111;
+    private Label cityLable, errorLabel, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable, pressureLable, timeLabel, rain, cityLable11, cityLable111, cityLable1111;
 
     @FXML
     private VBox Forma, Beck, Favorites;
@@ -66,9 +63,7 @@ public class MainController {
 
     @FXML
     public void initialize() {
-
         setAuthenticationStatus();
-
         updateTime();
         loadCities();
         cityComboBox.setEditable(true);
@@ -86,9 +81,7 @@ public class MainController {
         });
 
         cityComboBox.setItems(suggestions);
-
         cityComboBox.setOnAction(event -> fetchWeatherData());
-
         cityComboBox.setMinHeight(24);
         cityComboBox.setMaxHeight(36);
         toggleButton.setOnAction(event -> {
@@ -109,6 +102,8 @@ public class MainController {
                 authenticateUser();
             }
         });
+
+        favoritesComboBox.setOnAction(event -> fetchFavoriteWeatherData());
     }
 
     private void setAuthenticationStatus() {
@@ -116,8 +111,11 @@ public class MainController {
         Forma.setManaged(!isAuthenticated);
         Beck.setVisible(!isAuthenticated);
         Beck.setManaged(!isAuthenticated);
-
+        if (isAuthenticated) {
+            loadFavorites();
+        }
     }
+
     private void updateSuggestions(String input) {
         suggestions.clear();
         suggestions.addAll(cities.stream()
@@ -142,7 +140,6 @@ public class MainController {
             e.printStackTrace();
         }
     }
-
 
     @FXML
     private void registerUser() {
@@ -216,7 +213,6 @@ public class MainController {
         }
     }
 
-
     @FXML
     private void fetchData() {
         fetchWeatherData();
@@ -227,6 +223,19 @@ public class MainController {
             city = cityComboBox.getEditor().getText();
             try {
                 data = WeatherData.getData(city);
+                setData(data);
+                conditionIcon.setImage(data.getWeatherIcon());
+            } catch (IOException | InterruptedException | ParseException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void fetchFavoriteWeatherData() {
+        String selectedCity = favoritesComboBox.getValue();
+        if (selectedCity != null && !selectedCity.isEmpty()) {
+            try {
+                data = WeatherData.getData(selectedCity);
                 setData(data);
                 conditionIcon.setImage(data.getWeatherIcon());
             } catch (IOException | InterruptedException | ParseException ex) {
@@ -251,12 +260,9 @@ public class MainController {
                 if (currentFavorites == null || currentFavorites.isEmpty()) {
                     currentFavorites = city + "&";
                 } else {
-                    // Проверяем, содержится ли уже этот город в избранных
                     if (currentFavorites.contains(city)) {
-                        // Если содержится, удаляем его из списка избранных
                         currentFavorites = currentFavorites.replace(city + "&", "");
                     } else {
-                        // Если не содержится, добавляем его в список избранных
                         currentFavorites += city + "&";
                     }
                 }
@@ -265,6 +271,31 @@ public class MainController {
                 updateFavoritesStatement.setString(1, currentFavorites);
                 updateFavoritesStatement.setString(2, usernameField.getText());
                 updateFavoritesStatement.executeUpdate();
+            }
+
+            connection.close();
+            loadFavorites(); // Reload favorites after update
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadFavorites() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+
+            String query = "SELECT favorites FROM users WHERE username = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, usernameField.getText());
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                String favoritesString = resultSet.getString("favorites");
+                if (favoritesString != null && !favoritesString.isEmpty()) {
+                    List<String> favoriteCities = Arrays.asList(favoritesString.split("&"));
+                    favoritesComboBox.setItems(FXCollections.observableArrayList(favoriteCities));
+                }
             }
 
             connection.close();
@@ -302,7 +333,6 @@ public class MainController {
                     PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
                     deleteStatement.setString(1, data.getCity());
                     deleteStatement.executeUpdate();
-
                 } else {
                     favorites.add(data.getCity());
                     starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
@@ -310,7 +340,6 @@ public class MainController {
                     PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
                     insertStatement.setString(1, data.getCity());
                     insertStatement.executeUpdate();
-
                 }
 
                 connection.close();
@@ -321,6 +350,7 @@ public class MainController {
         cityLable.setGraphic(favoriteLabel);
         updateSearchHistory(data.getCity());
     }
+
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
 
     @FXML

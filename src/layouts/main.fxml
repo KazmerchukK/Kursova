@@ -128,10 +128,6 @@
          </ImageView>
       </VBox>
 
-      <VBox fx:id="Favorites" alignment="CENTER" layoutX="700.0" layoutY="78.0" spacing="14">
-         <ComboBox fx:id="favoritesСomboBox" layoutX="438.0" layoutY="410.0" prefHeight="34.0" prefWidth="169.0" promptText="Select favorite city" editable="true"/>
-      </VBox>
-
       <VBox fx:id="Forma" alignment="CENTER" layoutX="420.0" layoutY="176.0" spacing="14" style="-fx-background-color: white; -fx-padding: 20;">
          <ToggleButton fx:id="toggleButton" text="Switch to Registration"/>
          <TextField fx:id="usernameField" promptText="Username" />
@@ -139,6 +135,10 @@
          <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" visible="false"/>
          <Button fx:id="submitButton" text="Submit" />
          <Label fx:id="errorLabel" textFill="RED" />
+      </VBox>
+
+      <VBox fx:id="Favorites" alignment="CENTER" layoutX="700.0" layoutY="78.0" spacing="14">
+         <ComboBox fx:id="favoritesComboBox" layoutX="438.0" layoutY="410.0" prefHeight="34.0" prefWidth="169.0" promptText="Select favorite city" editable="true"/>
       </VBox>
 
 
