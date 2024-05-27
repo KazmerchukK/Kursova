@@ -38,10 +38,10 @@ public class MainController {
     private Button fetchDataBtn, submitButton;
 
     @FXML
-    private ComboBox<String> cityComboBox;
+    private ComboBox<String> cityComboBox, favoritesСomboBox;
 
     @FXML
-    private ImageView conditionIcon,rainIcon2 ,windIcon ,HumidityIcon ,PressureIcon;
+    private ImageView conditionIcon,rainIcon2 ,windIcon ,HumidityIcon ,PressureIcon, background;
 
     @FXML
     private ToggleButton toggleButton;
@@ -59,7 +59,7 @@ public class MainController {
     private Label cityLable,errorLabel, discriptionLable, tempLable, feelLable, rainChanceLable, windSpeedLable, humidityLable, pressureLable, timeLabel,rain, cityLable11, cityLable111, cityLable1111;
 
     @FXML
-    private VBox Forma;
+    private VBox Forma, Beck, Favorites;
 
     private boolean isRegistrationMode = false;
     private boolean isAuthenticated = false;
@@ -111,55 +111,12 @@ public class MainController {
         });
     }
 
-
     private void setAuthenticationStatus() {
         Forma.setVisible(!isAuthenticated);
         Forma.setManaged(!isAuthenticated);
+        Beck.setVisible(!isAuthenticated);
+        Beck.setManaged(!isAuthenticated);
 
-        cityComboBox.setVisible(isAuthenticated);
-        cityComboBox.setManaged(isAuthenticated);
-        fetchDataBtn.setVisible(isAuthenticated);
-        fetchDataBtn.setManaged(isAuthenticated);
-
-        tempLable.setVisible(isAuthenticated);
-        tempLable.setManaged(isAuthenticated);
-        cityLable.setVisible(isAuthenticated);
-        cityLable.setManaged(isAuthenticated);
-        discriptionLable.setVisible(isAuthenticated);
-        discriptionLable.setManaged(isAuthenticated);
-        feelLable.setVisible(isAuthenticated);
-        feelLable.setManaged(isAuthenticated);
-        rainChanceLable.setVisible(isAuthenticated);
-        rainChanceLable.setManaged(isAuthenticated);
-        windSpeedLable.setVisible(isAuthenticated);
-        windSpeedLable.setManaged(isAuthenticated);
-        humidityLable.setVisible(isAuthenticated);
-        humidityLable.setManaged(isAuthenticated);
-        pressureLable.setVisible(isAuthenticated);
-        pressureLable.setManaged(isAuthenticated);
-
-        conditionIcon.setVisible(isAuthenticated);
-        conditionIcon.setManaged(isAuthenticated);
-        rainIcon2.setVisible(isAuthenticated);
-        rainIcon2.setManaged(isAuthenticated);
-        windIcon.setVisible(isAuthenticated);
-        windIcon.setManaged(isAuthenticated);
-        HumidityIcon.setVisible(isAuthenticated);
-        HumidityIcon.setManaged(isAuthenticated);
-        PressureIcon.setVisible(isAuthenticated);
-        PressureIcon.setManaged(isAuthenticated);
-
-        rain.setVisible(isAuthenticated);
-        rain.setManaged(isAuthenticated);
-        cityLable11.setVisible(isAuthenticated);
-        cityLable11.setManaged(isAuthenticated);
-        cityLable111.setVisible(isAuthenticated);
-        cityLable111.setManaged(isAuthenticated);
-        cityLable1111.setVisible(isAuthenticated);
-        cityLable1111.setManaged(isAuthenticated);
-
-        rectangle.setVisible(isAuthenticated);
-        rectangle.setManaged(isAuthenticated);
     }
     private void updateSuggestions(String input) {
         suggestions.clear();
@@ -247,6 +204,7 @@ public class MainController {
                 setAuthenticationStatus();
                 errorLabel.setText("Login successful");
                 Forma.setVisible(false);
+                Beck.setVisible(false);
             } else {
                 errorLabel.setText("Invalid username or password");
             }
