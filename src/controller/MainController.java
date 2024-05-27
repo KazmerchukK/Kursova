@@ -225,6 +225,7 @@ public class MainController {
                 data = WeatherData.getData(city);
                 setData(data);
                 conditionIcon.setImage(data.getWeatherIcon());
+                updateFavoriteIcon(city);
             } catch (IOException | InterruptedException | ParseException ex) {
                 ex.printStackTrace();
             }
@@ -238,6 +239,7 @@ public class MainController {
                 data = WeatherData.getData(selectedCity);
                 setData(data);
                 conditionIcon.setImage(data.getWeatherIcon());
+                updateFavoriteIcon(selectedCity);
             } catch (IOException | InterruptedException | ParseException ex) {
                 ex.printStackTrace();
             }
@@ -294,7 +296,11 @@ public class MainController {
                 String favoritesString = resultSet.getString("favorites");
                 if (favoritesString != null && !favoritesString.isEmpty()) {
                     List<String> favoriteCities = Arrays.asList(favoritesString.split("&"));
+                    favorites.clear();
+                    favorites.addAll(favoriteCities);
                     favoritesComboBox.setItems(FXCollections.observableArrayList(favoriteCities));
+                } else {
+                    favoritesComboBox.setItems(FXCollections.observableArrayList(new ArrayList<>()));
                 }
             }
 
@@ -302,6 +308,21 @@ public class MainController {
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateFavoriteIcon(String city) {
+        ImageView starIcon = new ImageView(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
+        starIcon.setFitWidth(20);
+        starIcon.setFitHeight(20);
+        if (favorites.contains(city)) {
+            starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
+        }
+        Label favoriteLabel = new Label("", starIcon);
+        favoriteLabel.setOnMouseClicked(event -> {
+            updateFavorites(city);
+            updateFavoriteIcon(city); // Update icon immediately after favorite status changes
+        });
+        cityLable.setGraphic(favoriteLabel);
     }
 
     @FXML
@@ -314,40 +335,7 @@ public class MainController {
         windSpeedLable.setText(data.getWindSpeed() + " m/s");
         humidityLable.setText(data.getHumidity() + "%");
         pressureLable.setText(data.getPressure() + " hPa");
-
-        ImageView starIcon = new ImageView(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
-        starIcon.setFitWidth(20);
-        starIcon.setFitHeight(20);
-        Label favoriteLabel = new Label("", starIcon);
-        favoriteLabel.setOnMouseClicked(event -> {
-            updateFavorites(city);
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-                Statement statement = connection.createStatement();
-
-                if (favorites.contains(data.getCity())) {
-                    favorites.remove(data.getCity());
-                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_filled.png")));
-                    String deleteQuery = "DELETE FROM favorites WHERE city = ?";
-                    PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
-                    deleteStatement.setString(1, data.getCity());
-                    deleteStatement.executeUpdate();
-                } else {
-                    favorites.add(data.getCity());
-                    starIcon.setImage(new Image(getClass().getResourceAsStream("../assets/star_empty.png")));
-                    String insertQuery = "INSERT INTO favorites (city) VALUES (?)";
-                    PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
-                    insertStatement.setString(1, data.getCity());
-                    insertStatement.executeUpdate();
-                }
-
-                connection.close();
-            } catch (ClassNotFoundException | SQLException e) {
-                e.printStackTrace();
-            }
-        });
-        cityLable.setGraphic(favoriteLabel);
+        updateFavoriteIcon(data.getCity());
         updateSearchHistory(data.getCity());
     }
 
